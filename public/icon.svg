@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <rect width="512" height="512" fill="#0a0806"/>
+  <!-- Terrain silhouette -->
+  <path d="M0 380 L60 300 L120 340 L180 260 L240 300 L300 200 L360 280 L420 230 L480 260 L512 240 L512 512 L0 512 Z" fill="#1a2a14"/>
+  <path d="M0 420 L80 370 L160 390 L240 350 L320 380 L400 340 L512 360 L512 512 L0 512 Z" fill="#0f1a0c"/>
+  <!-- Campfire glow -->
+  <circle cx="256" cy="390" r="28" fill="rgba(255,120,30,0.25)"/>
+  <circle cx="256" cy="390" r="12" fill="rgba(255,160,60,0.6)"/>
+  <circle cx="256" cy="385" r="6" fill="rgba(255,220,100,0.9)"/>
+  <!-- R letterform -->
+  <text x="256" y="200" font-family="Georgia,serif" font-weight="bold" font-size="200" fill="#c8b89a" text-anchor="middle" dominant-baseline="middle" opacity="0.9">R</text>
+  <!-- Glow ring -->
+  <circle cx="256" cy="256" r="230" fill="none" stroke="rgba(200,184,154,0.08)" stroke-width="2"/>
+</svg>

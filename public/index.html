@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0"/>
+<meta name="description" content="REMNANT — A photorealistic 3D open world survival game. Craft, build, hunt and survive."/>
+<meta name="theme-color" content="#0a0806"/>
+<meta property="og:title" content="REMNANT — Open World Survival"/>
+<meta property="og:description" content="Craft. Build. Survive. A browser-based 3D survival game."/>
+<meta property="og:type" content="website"/>
+<link rel="manifest" href="/manifest.json"/>
+<link rel="icon" type="image/svg+xml" href="/icon.svg"/>
+<title>REMNANT — Open World Survival</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Share+Tech+Mono&display=swap');
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html,body{width:100%;height:100%;overflow:hidden;background:#000;font-family:'Share Tech Mono',monospace;color:#c8b89a}
+
+/* ── ANIMATED BACKGROUND ── */
+#bg-canvas{position:fixed;inset:0;z-index:0}
+
+/* ── FILM GRAIN ── */
+#grain{position:fixed;inset:0;z-index:1;pointer-events:none;opacity:.04;
+  background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  background-size:128px;animation:gs .12s steps(1) infinite}
+@keyframes gs{0%{transform:translate(0,0)}25%{transform:translate(-2px,1px)}50%{transform:translate(1px,-2px)}75%{transform:translate(-1px,2px)}100%{transform:translate(2px,-1px)}}
+
+/* ── SCANLINES ── */
+#scan{position:fixed;inset:0;z-index:1;pointer-events:none;
+  background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,.018) 2px,rgba(0,0,0,.018) 4px)}
+
+/* ── VIGNETTE ── */
+#vig{position:fixed;inset:0;z-index:2;pointer-events:none;
+  background:radial-gradient(ellipse at center,transparent 35%,rgba(0,0,0,.75) 100%)}
+
+/* ── MAIN LAYOUT ── */
+#menu{position:fixed;inset:0;z-index:10;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:0}
+
+/* ── LOGO ── */
+.logo-wrap{display:flex;flex-direction:column;align-items:center;gap:6px;margin-bottom:48px}
+.logo-eyebrow{font-size:11px;letter-spacing:.55em;color:rgba(200,184,154,.3);animation:fadeUp .8s ease .2s both}
+.logo-title{font-family:'Bebas Neue',sans-serif;font-size:clamp(72px,14vw,160px);letter-spacing:.18em;
+  color:#c8b89a;line-height:1;
+  text-shadow:0 0 80px rgba(200,184,154,.25),0 0 200px rgba(200,184,154,.08);
+  animation:fadeUp .9s ease .1s both, logoGlow 4s ease-in-out 1s infinite}
+.logo-tagline{font-size:11px;letter-spacing:.45em;color:rgba(200,184,154,.35);animation:fadeUp .8s ease .4s both}
+@keyframes logoGlow{
+  0%,100%{text-shadow:0 0 80px rgba(200,184,154,.25),0 0 200px rgba(200,184,154,.08)}
+  50%    {text-shadow:0 0 120px rgba(200,184,154,.4),0 0 300px rgba(200,184,154,.15)}}
+@keyframes fadeUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+
+/* ── MENU BUTTONS ── */
+.menu-buttons{display:flex;flex-direction:column;align-items:center;gap:10px;animation:fadeUp .8s ease .6s both}
+
+.menu-btn{
+  font-family:'Share Tech Mono',monospace;
+  font-size:13px;letter-spacing:.35em;
+  color:rgba(200,184,154,.65);
+  background:rgba(200,184,154,.03);
+  border:1px solid rgba(200,184,154,.18);
+  padding:14px 52px;
+  cursor:pointer;
+  transition:all .2s ease;
+  position:relative;
+  overflow:hidden;
+  width:260px;text-align:center;
+  text-decoration:none;display:block;
+}
+.menu-btn::before{
+  content:'';position:absolute;inset:0;
+  background:linear-gradient(90deg,transparent,rgba(200,184,154,.04),transparent);
+  transform:translateX(-100%);transition:transform .4s ease}
+.menu-btn:hover{color:rgba(200,184,154,.95);border-color:rgba(200,184,154,.5);background:rgba(200,184,154,.07)}
+.menu-btn:hover::before{transform:translateX(100%)}
+.menu-btn.primary{color:rgba(200,220,180,.8);border-color:rgba(150,200,120,.35);background:rgba(50,100,40,.08);font-size:15px;padding:18px 52px}
+.menu-btn.primary:hover{color:#fff;border-color:rgba(150,200,120,.7);background:rgba(50,100,40,.18);box-shadow:0 0 30px rgba(100,180,80,.1)}
+
+.menu-divider{width:120px;height:1px;background:rgba(200,184,154,.08);margin:4px 0}
+
+/* ── FEATURE PILLS ── */
+.features{display:flex;gap:16px;margin-top:42px;flex-wrap:wrap;justify-content:center;animation:fadeUp .8s ease .8s both}
+.feat-pill{font-size:8px;letter-spacing:.25em;color:rgba(200,184,154,.25);
+  border:1px solid rgba(200,184,154,.08);padding:5px 14px}
+
+/* ── BOTTOM META ── */
+.meta-bar{position:fixed;bottom:24px;left:0;right:0;display:flex;justify-content:center;gap:32px;z-index:11;animation:fadeUp .8s ease 1s both}
+.meta-item{font-size:8px;letter-spacing:.2em;color:rgba(200,184,154,.2)}
+.meta-item a{color:rgba(200,184,154,.2);text-decoration:none}
+.meta-item a:hover{color:rgba(200,184,154,.5)}
+
+/* ── VERSION BADGE ── */
+.version{position:fixed;top:20px;right:20px;font-size:8px;letter-spacing:.25em;color:rgba(200,184,154,.2);z-index:11}
+
+/* ── CORNER DECO ── */
+.corner-deco{position:fixed;width:44px;height:44px;border-color:rgba(200,184,154,.15);border-style:solid;z-index:11}
+.corner-deco.tl{top:16px;left:16px;border-width:1px 0 0 1px}
+.corner-deco.br{bottom:16px;right:16px;border-width:0 1px 1px 0}
+
+/* ── LOADING TRANSITION ── */
+#load-transition{position:fixed;inset:0;z-index:100;background:#000;pointer-events:none;opacity:0;transition:opacity .6s ease}
+#load-transition.active{opacity:1;pointer-events:all}
+
+/* ── STATS BAR ── */
+#live-stats{position:fixed;top:20px;left:50%;transform:translateX(-50%);z-index:11;
+  display:flex;gap:24px;animation:fadeUp .8s ease .3s both}
+.ls-item{font-size:9px;letter-spacing:.2em;color:rgba(200,184,154,.2);display:flex;align-items:center;gap:5px}
+.ls-dot{width:4px;height:4px;border-radius:50%;background:rgba(46,204,113,.5);animation:lsDot 2s ease infinite}
+@keyframes lsDot{0%,100%{opacity:.4}50%{opacity:1}}
+
+/* Responsive */
+@media(max-width:480px){
+  .logo-title{font-size:clamp(56px,18vw,100px)}
+  .menu-btn{width:90vw;padding:14px 20px}
+  .features{gap:8px}
+  .feat-pill{font-size:7px;padding:4px 10px}
+}
+</style>
+</head>
+<body>
+
+<canvas id="bg-canvas"></canvas>
+<div id="grain"></div>
+<div id="scan"></div>
+<div id="vig"></div>
+<div class="corner-deco tl"></div>
+<div class="corner-deco br"></div>
+<div class="version">v1.0.0</div>
+
+<div id="live-stats">
+  <div class="ls-item"><div class="ls-dot"></div><span id="players-online">4 ONLINE</span></div>
+  <div class="ls-item">BROWSER · NO INSTALL</div>
+  <div class="ls-item">60 FPS TARGET</div>
+</div>
+
+<div id="menu">
+  <div class="logo-wrap">
+    <div class="logo-eyebrow">AN OPEN WORLD SURVIVAL EXPERIENCE</div>
+    <div class="logo-title">REMNANT</div>
+    <div class="logo-tagline">CRAFT &nbsp;·&nbsp; BUILD &nbsp;·&nbsp; HUNT &nbsp;·&nbsp; SURVIVE</div>
+  </div>
+
+  <div class="menu-buttons">
+    <a class="menu-btn primary" href="/game.html" onclick="startGame(event)">[ ENTER WORLD ]</a>
+    <div class="menu-divider"></div>
+    <a class="menu-btn" href="#" onclick="showControls(event)">[ HOW TO PLAY ]</a>
+    <a class="menu-btn" href="#" onclick="showCredits(event)">[ CREDITS ]</a>
+  </div>
+
+  <div class="features">
+    <div class="feat-pill">🌍 OPEN WORLD 2KM²</div>
+    <div class="feat-pill">⚔ COMBAT SYSTEM</div>
+    <div class="feat-pill">🏗 BUILD ANYWHERE</div>
+    <div class="feat-pill">⚒ 12 CRAFT RECIPES</div>
+    <div class="feat-pill">🌦 DYNAMIC WEATHER</div>
+    <div class="feat-pill">🌙 DAY/NIGHT CYCLE</div>
+    <div class="feat-pill">📱 MOBILE READY</div>
+    <div class="feat-pill">🔊 PROCEDURAL AUDIO</div>
+    <div class="feat-pill">🤝 MULTIPLAYER</div>
+  </div>
+</div>
+
+<div class="meta-bar">
+  <div class="meta-item">THREE.JS · WebGL2</div>
+  <div class="meta-item">RUNS IN ANY BROWSER</div>
+  <div class="meta-item">BUILT WITH ♥ BY CLAUDE</div>
+</div>
+
+<div id="load-transition"></div>
+
+<!-- Controls overlay -->
+<div id="controls-overlay" style="display:none;position:fixed;inset:0;z-index:50;background:rgba(0,0,0,.88);backdrop-filter:blur(8px);align-items:center;justify-content:center">
+  <div style="max-width:600px;padding:40px;border:1px solid rgba(200,184,154,.14);background:rgba(8,7,5,.97)">
+    <div style="font-family:'Bebas Neue',sans-serif;font-size:28px;letter-spacing:.2em;color:rgba(200,184,154,.7);margin-bottom:20px;border-bottom:1px solid rgba(200,184,154,.1);padding-bottom:12px">HOW TO PLAY</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;font-size:9px;letter-spacing:.15em;color:rgba(200,184,154,.5);line-height:2">
+      <div><b style="color:rgba(200,184,154,.75)">MOVEMENT</b><br>WASD — Move<br>SHIFT — Sprint<br>SPACE — Jump<br>F — Toggle Camera View</div>
+      <div><b style="color:rgba(200,184,154,.75)">ACTIONS</b><br>LMB — Attack<br>E — Interact / Pick Up<br>T — Open Chat<br>ESC — Close Panels</div>
+      <div><b style="color:rgba(200,184,154,.75)">SURVIVAL</b><br>Eat food to restore Hunger<br>Drink water for Thirst<br>Use Bandages to heal HP<br>Avoid freezing at night</div>
+      <div><b style="color:rgba(200,184,154,.75)">SYSTEMS</b><br>I — Inventory<br>C — Crafting Bench<br>B — Build Mode<br>1-5 — Hotbar Slots</div>
+      <div><b style="color:rgba(200,184,154,.75)">ENEMIES</b><br>Wolves, Bears, Infected<br>Chase you on sight<br>Attack at night<br>Drop loot on death</div>
+      <div><b style="color:rgba(200,184,154,.75)">BUILDING</b><br>Floor / Wall / Roof / Door<br>Requires Wood + Stone<br>Place fires for warmth<br>Build to survive nights</div>
+    </div>
+    <div onclick="document.getElementById('controls-overlay').style.display='none'" style="margin-top:24px;font-size:9px;letter-spacing:.3em;color:rgba(200,184,154,.4);cursor:pointer;text-align:center;border:1px solid rgba(200,184,154,.12);padding:8px">[ CLOSE ]</div>
+  </div>
+</div>
+
+<!-- Credits overlay -->
+<div id="credits-overlay" style="display:none;position:fixed;inset:0;z-index:50;background:rgba(0,0,0,.88);backdrop-filter:blur(8px);align-items:center;justify-content:center">
+  <div style="max-width:480px;padding:40px;border:1px solid rgba(200,184,154,.14);background:rgba(8,7,5,.97);text-align:center">
+    <div style="font-family:'Bebas Neue',sans-serif;font-size:28px;letter-spacing:.2em;color:rgba(200,184,154,.7);margin-bottom:20px">CREDITS</div>
+    <div style="font-size:9px;letter-spacing:.15em;color:rgba(200,184,154,.45);line-height:2.4">
+      <div style="color:rgba(200,184,154,.7);font-size:11px;margin-bottom:8px">REMNANT v1.0</div>
+      Designed &amp; Built by <span style="color:rgba(200,184,154,.8)">Claude (Anthropic)</span><br>
+      3D Engine: <span style="color:rgba(200,184,154,.7)">Three.js r128</span><br>
+      Rendering: <span style="color:rgba(200,184,154,.7)">WebGL2 · ACESFilmic Tone Mapping</span><br>
+      Audio: <span style="color:rgba(200,184,154,.7)">Web Audio API (Procedural)</span><br>
+      Fonts: <span style="color:rgba(200,184,154,.7)">Bebas Neue · Share Tech Mono</span><br>
+      Hosting: <span style="color:rgba(200,184,154,.7)">Vercel</span><br><br>
+      <div style="color:rgba(200,184,154,.25);font-size:8px">Built phase by phase across 5 iterations<br>from a single conversation.</div>
+    </div>
+    <div onclick="document.getElementById('credits-overlay').style.display='none'" style="margin-top:24px;font-size:9px;letter-spacing:.3em;color:rgba(200,184,154,.4);cursor:pointer;border:1px solid rgba(200,184,154,.12);padding:8px">[ CLOSE ]</div>
+  </div>
+</div>
+
+<script>
+// ── Background canvas: animated procedural terrain preview ──
+const bgCanvas = document.getElementById('bg-canvas');
+const bgCtx = bgCanvas.getContext('2d');
+let W, H, t = 0;
+
+function resize() { W = bgCanvas.width = window.innerWidth; H = bgCanvas.height = window.innerHeight; }
+resize(); window.addEventListener('resize', resize);
+
+function noise(x, y, s) { return Math.sin(x*s)*Math.cos(y*s*1.3)*0.5+0.5; }
+
+function drawBg() {
+  requestAnimationFrame(drawBg);
+  t += 0.003;
+  bgCtx.clearRect(0, 0, W, H);
+
+  // Gradient sky
+  const sky = bgCtx.createLinearGradient(0, 0, 0, H);
+  const sunY = Math.sin(t * 0.4);
+  if (sunY > 0.3) {
+    // Day
+    sky.addColorStop(0, `hsl(210,35%,${8+sunY*12}%)`);
+    sky.addColorStop(0.6, `hsl(200,25%,${12+sunY*8}%)`);
+    sky.addColorStop(1, `hsl(30,20%,${6+sunY*4}%)`);
+  } else {
+    // Night / dusk
+    sky.addColorStop(0, `hsl(220,30%,4%)`);
+    sky.addColorStop(0.5, `hsl(210,20%,${5+Math.max(0,sunY)*6}%)`);
+    sky.addColorStop(1, `hsl(${20+sunY*30},25%,${4+Math.max(0,sunY)*4}%)`);
+  }
+  bgCtx.fillStyle = sky; bgCtx.fillRect(0, 0, W, H);
+
+  // Stars at night
+  if (sunY < 0.2) {
+    const starAlpha = Math.max(0, 0.2 - sunY) * 5;
+    for (let i = 0; i < 80; i++) {
+      const sx = ((i * 137.5) % 1) * W;
+      const sy = ((i * 97.3) % 0.6) * H;
+      const twinkle = Math.abs(Math.sin(t * 2 + i));
+      bgCtx.fillStyle = `rgba(200,200,220,${starAlpha * twinkle * 0.6})`;
+      bgCtx.fillRect(sx, sy, 1.5, 1.5);
+    }
+  }
+
+  // Sun / Moon
+  const sunX = W * 0.6, sunYpx = H * (0.45 - sunY * 0.3);
+  bgCtx.save();
+  if (sunY > 0) {
+    // Sun glow
+    const sg = bgCtx.createRadialGradient(sunX, sunYpx, 0, sunX, sunYpx, 120);
+    sg.addColorStop(0, `rgba(255,200,80,${sunY*0.15})`);
+    sg.addColorStop(1, 'transparent');
+    bgCtx.fillStyle = sg; bgCtx.fillRect(0, 0, W, H);
+    // Sun disk
+    bgCtx.beginPath(); bgCtx.arc(sunX, sunYpx, 18, 0, Math.PI*2);
+    bgCtx.fillStyle = `rgba(255,220,100,${Math.min(1,sunY*2)})`; bgCtx.fill();
+  } else {
+    // Moon
+    bgCtx.beginPath(); bgCtx.arc(W*0.7, H*0.18, 14, 0, Math.PI*2);
+    bgCtx.fillStyle = 'rgba(220,220,200,0.7)'; bgCtx.fill();
+  }
+  bgCtx.restore();
+
+  // Procedural terrain silhouette layers
+  const layers = [
+    { y:0.55, amp:0.12, freq:0.008, speed:0.15, col:`rgba(15,22,12,${0.9})` },
+    { y:0.62, amp:0.08, freq:0.012, speed:0.25, col:`rgba(12,18,10,${0.95})` },
+    { y:0.70, amp:0.05, freq:0.018, speed:0.35, col:`rgba(10,14,8,0.97)` },
+    { y:0.78, amp:0.03, freq:0.025, speed:0.45, col:`rgba(8,10,6,1)` },
+  ];
+
+  layers.forEach(layer => {
+    bgCtx.beginPath();
+    bgCtx.moveTo(0, H);
+    for (let x = 0; x <= W; x += 3) {
+      const nx = x / W;
+      const ny = noise(nx * W * layer.freq + t * layer.speed, 0.5, 1);
+      const y = H * layer.y - ny * H * layer.amp;
+      x === 0 ? bgCtx.moveTo(x, y) : bgCtx.lineTo(x, y);
+    }
+    bgCtx.lineTo(W, H); bgCtx.closePath();
+    bgCtx.fillStyle = layer.col; bgCtx.fill();
+  });
+
+  // Campfire glow at base
+  const fx = W * 0.5, fy = H * 0.78;
+  const fg = bgCtx.createRadialGradient(fx, fy, 0, fx, fy, 80 + Math.sin(t*8)*10);
+  fg.addColorStop(0, `rgba(255,120,30,${0.15 + Math.sin(t*9)*0.05})`);
+  fg.addColorStop(0.5, `rgba(255,80,10,0.06)`);
+  fg.addColorStop(1, 'transparent');
+  bgCtx.fillStyle = fg; bgCtx.fillRect(fx-90, fy-90, 180, 180);
+
+  // Fog / ground mist
+  const mist = bgCtx.createLinearGradient(0, H*0.72, 0, H);
+  mist.addColorStop(0, 'transparent');
+  mist.addColorStop(1, 'rgba(80,100,90,0.18)');
+  bgCtx.fillStyle = mist; bgCtx.fillRect(0, 0, W, H);
+}
+drawBg();
+
+// ── Simulated player count ──
+let playerCount = 3 + Math.floor(Math.random()*8);
+setInterval(() => {
+  playerCount += Math.floor(Math.random()*3) - 1;
+  playerCount = Math.max(1, Math.min(20, playerCount));
+  const el = document.getElementById('players-online');
+  if (el) el.textContent = playerCount + ' ONLINE';
+}, 8000);
+
+// ── Start game ──
+function startGame(e) {
+  e.preventDefault();
+  const tr = document.getElementById('load-transition');
+  tr.classList.add('active');
+  setTimeout(() => window.location.href = '/game.html', 600);
+}
+
+function showControls(e) {
+  e.preventDefault();
+  const ov = document.getElementById('controls-overlay');
+  ov.style.display = 'flex';
+}
+
+function showCredits(e) {
+  e.preventDefault();
+  const ov = document.getElementById('credits-overlay');
+  ov.style.display = 'flex';
+}
+
+// Close overlays on outside click
+['controls-overlay','credits-overlay'].forEach(id => {
+  document.getElementById(id).addEventListener('click', function(e) {
+    if (e.target === this) this.style.display = 'none';
+  });
+});
+</script>
+</body>
+</html>
